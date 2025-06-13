@@ -3,6 +3,7 @@ import email
 import re
 import requests
 import html2text
+import time
 from bs4 import BeautifulSoup
 
 # ========== CONFIG ==========
