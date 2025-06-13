@@ -16,7 +16,7 @@ SEARCH_KEYWORDS = ["tracking", "shipped", "out for delivery", "package", "delive
 def extract_tracking_numbers(text):
     patterns = [
         r"\b1Z[0-9A-Z]{16}\b",  # UPS
-        r"\b\d{12,22}\b"        # FedEx, USPS
+        r"\b\d{12,22}\b"        # FedEx, USPS, Amazon
     ]
     found = set()
     for pattern in patterns:
@@ -43,8 +43,11 @@ def submit_to_aftership(tracking_number, carrier):
             "carrier_code": carrier
         }
     }
-    response = requests.post("https://api.aftership.com/v4/trackings", json=data, headers=headers)
-    print(f"Submitted {tracking_number} ({carrier}): {response.status_code}")
+    try:
+        response = requests.post("https://api.aftership.com/v4/trackings", json=data, headers=headers)
+        print(f"Submitted {tracking_number} ({carrier}): {response.status_code}")
+    except Exception as e:
+        print(f"AfterShip submission failed: {e}")
 
 def process_email(msg):
     try:
@@ -63,20 +66,28 @@ def process_email(msg):
     except Exception as e:
         print(f"Failed to process email: {e}")
 
-def main():
-    client = imapclient.IMAPClient(IMAP_SERVER, ssl=True)
-    client.login(EMAIL, PASSWORD)
-    client.select_folder("INBOX", readonly=True)
-    UIDs = client.search(["UNSEEN"])
-    print(f"Found {len(UIDs)} new emails")
-    for uid in UIDs:
-        raw = client.fetch([uid], ["RFC822"])[uid][b"RFC822"]
-        msg = email.message_from_bytes(raw)
-        subject = msg["subject"]
-        if any(keyword.lower() in subject.lower() for keyword in SEARCH_KEYWORDS):
-            print(f"Processing: {subject}")
-            process_email(msg)
-    client.logout()
+def run_tracker():
+    try:
+        client = imapclient.IMAPClient(IMAP_SERVER, ssl=True)
+        client.login(EMAIL, PASSWORD)
+        client.select_folder("INBOX", readonly=True)
+        uids = client.search(["UNSEEN"])
+        print(f"Found {len(uids)} new emails")
+        for uid in uids:
+            raw = client.fetch([uid], ["RFC822"])[uid][b"RFC822"]
+            msg = email.message_from_bytes(raw)
+            subject = msg["subject"] or ""
+            if any(keyword.lower() in subject.lower() for keyword in SEARCH_KEYWORDS):
+                print(f"Processing email: {subject}")
+                process_email(msg)
+        client.logout()
+    except Exception as e:
+        print(f"Email check failed: {e}")
 
+# 🔁 Continuous loop
 if __name__ == "__main__":
-    main()
+    print("Starting AfterShip Email Tracker loop...")
+    while True:
+        run_tracker()
+        print(f"Waiting {CHECK_INTERVAL_SECONDS} seconds before next check...\n")
+        time.sleep(CHECK_INTERVAL_SECONDS)
