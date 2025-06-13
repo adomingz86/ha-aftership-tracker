@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 # ========== CONFIG ==========
 EMAIL = "czdzhatablet@zohomail.com"
-PASSWORD = "Kanuga6521!"
+PASSWORD = "3Monday3!"
 IMAP_SERVER = "imap.zoho.com"
 AFTERSHIP_API_KEY = "asat_07d6a1ebbb344426a3bc2a8880b85316"
 SEARCH_KEYWORDS = ["tracking", "shipped", "out for delivery", "package", "delivered"]
