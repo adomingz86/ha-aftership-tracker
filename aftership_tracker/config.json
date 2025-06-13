@@ -1,0 +1,13 @@
+{
+  "name": "AfterShip Email Tracker",
+  "version": "1.0.0",
+  "slug": "aftership_tracker",
+  "description": "Parses emails for tracking numbers and sends to AfterShip.",
+  "startup": "application",
+  "boot": "auto",
+  "host_network": true,
+  "privileged": [],
+  "options": {},
+  "schema": {},
+  "arch": ["amd64", "aarch64", "armv7"]
+}
